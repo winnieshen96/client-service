@@ -32,12 +32,11 @@ stages:
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
-        command: buildAndPush
-        repository: $(imageRepository)
-        dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)
-        tags: |
-          $(tag)
+        containerRegistry: 'ACRconnection'
+        repository: '$(imageRepository)'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: '$(tag)'
     - upload: manifests
       artifact: manifests
 
@@ -59,17 +58,19 @@ stages:
             displayName: Create imagePullSecret
             inputs:
               action: 'createSecret'
-              kubernetesServiceConnection: 'dev-myAKSCluster-dev-1573231993640'
+              kubernetesServiceConnection: 'dev-myAKSCluster-dev-1573356619207'
+              namespace: 'dev'
               secretType: 'dockerRegistry'
-              secretName: $(imagePullSecret)
+              secretName: '$(imagePullSecret)'
               dockerRegistryEndpoint: 'ACRconnection'
           - task: KubernetesManifest@0
             displayName: Deploy to Kubernetes cluster
             inputs:
               action: 'deploy'
-              kubernetesServiceConnection: 'dev-myAKSCluster-dev-1573231993640'
+              kubernetesServiceConnection: 'dev-myAKSCluster-dev-1573356619207'
+              namespace: 'dev'
               manifests: |
                 $(Pipeline.Workspace)/manifests/client-config.yml
                 $(Pipeline.Workspace)/manifests/client-service-deployment.yml
-              containers: $(containerRegistry)/$(imageRepository):$(tag)
-              imagePullSecrets: $(imagePullSecret)
+              containers: '$(containerRegistry)/$(imageRepository):$(tag)'
+              imagePullSecrets: '$(imagePullSecret)'
