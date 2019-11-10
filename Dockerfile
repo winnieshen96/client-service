@@ -2,7 +2,7 @@ FROM maven:3.6.2-jdk-8 AS build
 COPY src /usr/app/src  
 COPY pom.xml /usr/app
 WORKDIR /usr/app
-RUN mvn clean package
+RUN mvn clean install
 
 FROM openjdk:8-jdk-alpine
 VOLUME /tmp
